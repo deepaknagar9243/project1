@@ -34,6 +34,7 @@ body {
   background: rgba(0,0,0,0.4);
   padding: 10px 20px;
   border-radius: 10px;
+  z-index: 2;
 }
 
 .progress-bar {
@@ -43,6 +44,7 @@ body {
   height: 4px;
   background: white;
   width: 0%;
+  z-index: 3;
 }
 
 .start-btn {
@@ -55,18 +57,37 @@ body {
   border: none;
   border-radius: 10px;
   cursor: pointer;
+  z-index: 3;
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
 }
 </style>
 </head>
 
 <body>
 
-<div class="story-container">
+<div class="story-container" id="container">
+
+  <canvas id="particles"></canvas>
 
   <div class="progress-bar" id="progress"></div>
 
-  <img id="media" src="" style="display:none;">
-  <video id="video" style="display:none;" muted></video>
+  <img id="imageMedia" style="display:none;">
+  <video id="videoMedia" style="display:none;" muted></video>
+
+  <audio id="bgMusic" src="music.mp3"></audio>
 
   <div class="overlay-text" id="text"></div>
 
@@ -84,53 +105,69 @@ let mediaFiles = [
   "img5.jpeg",
   "img6.jpeg",
   "img8.jpeg",
-  "video.mp4"   // video last me
+  "video.mp4"
 ];
 
 let texts = [
-  "Holi but make it Developer 🎨",
-  "RGB Mode Activated 💻",
-  "Colors Compiled Successfully 🚀",
-  "This Moment = Pure Happiness ❤️",
-  "Data + Dhol = Perfect Combo 🥁",
-  "Celebrating Colors & Code 🌈",
-  "Memory Stored Successfully 💾",
-  "Final Story – Play the Video 🎬"
+  "Booting Holi Experience... 🎨",
+  "RGB Spectrum Online 💻",
+  "Colors Compiled Without Errors 🚀",
+  "Joy Level: 100% ❤️",
+  "Rendering Festival Output 🎆",
+  "Memories Saved to Cloud 🌈",
+  "No Bugs Found... Only Vibes 🤔",
+  "Final Execution Starting... 🎬"
 ];
-
 let current = 0;
-let interval;
+let interval = null;
 let duration = 4000;
+let music = document.getElementById("bgMusic");
 
 function startStory() {
   document.querySelector(".start-btn").style.display = "none";
+
+  music.volume = 0.5;
+  music.play();
+
   showMedia();
   interval = setInterval(nextSlide, duration);
 }
 
 function showMedia() {
-  let img = document.getElementById("media");
-  let vid = document.getElementById("video");
+
+  let img = document.getElementById("imageMedia");
+  let vid = document.getElementById("videoMedia");
   let progress = document.getElementById("progress");
 
-  progress.style.width = "0%";
   progress.style.transition = "none";
+  progress.style.width = "0%";
 
   setTimeout(() => {
     progress.style.transition = duration + "ms linear";
     progress.style.width = "100%";
   }, 100);
 
-  if (mediaFiles[current].includes(".mp4")) {
+  let file = mediaFiles[current];
+
+  if (file.endsWith(".mp4")) {
+
+    clearInterval(interval);
+
     img.style.display = "none";
     vid.style.display = "block";
-    vid.src = mediaFiles[current];
+    vid.src = file;
     vid.play();
-    clearInterval(interval);
+
+    vid.onended = function() {
+      dangerousEnding();
+    };
+
   } else {
+
     vid.style.display = "none";
     img.style.display = "block";
-    img.src = mediaFiles[current];
+    img.src = file;
+
   }
 
   document.getElementById("text").innerText = texts[current];
@@ -138,22 +175,101 @@ function showMedia() {
 
 function nextSlide() {
   current++;
+
   if (current >= mediaFiles.length) {
-    clearInterval(interval);
+    dangerousEnding();
     return;
   }
+
   showMedia();
 }
 
-document.addEventListener("click", function(e){
-  if(e.clientX > window.innerWidth / 2){
-    nextSlide();
-  } else {
-    current--;
-    if(current < 0) current = 0;
-    showMedia();
+function dangerousEnding() {
+
+  if(interval) clearInterval(interval);
+
+  music.pause();
+  music.currentTime = 0;
+
+  let container = document.getElementById("container");
+
+  container.innerHTML = `
+    <div style="
+      width:100%;
+      height:100vh;
+      background:black;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      font-size:40px;
+      color:red;
+      animation:flicker 0.8s infinite;
+    ">
+      SYSTEM HACKED BY COLORS 🎨💀
+      <br>
+      <span style="font-size:20px;color:white;margin-top:20px;">
+        Happy Holi! | 
+      </span>
+    </div>
+  `;
+}
+
+// ================= PARTICLES =================
+
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particlesArray = [];
+
+class Particle {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = canvas.height;
+    this.size = Math.random() * 8 + 2;
+    this.speedY = Math.random() * -3 - 1;
+    this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
   }
-});
+
+  update() {
+    this.y += this.speedY;
+    if (this.size > 0.2) this.size -= 0.05;
+  }
+
+  draw() {
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < particlesArray.length; i++) {
+    particlesArray[i].update();
+    particlesArray[i].draw();
+
+    if (particlesArray[i].size <= 0.3) {
+      particlesArray.splice(i, 1);
+      i--;
+    }
+  }
+
+  requestAnimationFrame(animateParticles);
+}
+
+setInterval(() => {
+  for (let i = 0; i < 5; i++) {
+    particlesArray.push(new Particle());
+  }
+}, 200);
+
+animateParticles();
 
 </script>
 
