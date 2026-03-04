@@ -1,25 +1,161 @@
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<title>Holi Story - Deepak Nagar</title>
+
+<style>
+body {
+  margin: 0;
+  background: black;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+.story-container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+.story-container img,
+.story-container video {
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+}
+
+.overlay-text {
+  position: absolute;
+  bottom: 15%;
+  left: 5%;
+  font-size: 28px;
+  background: rgba(0,0,0,0.4);
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+
+.progress-bar {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  height: 4px;
+  background: white;
+  width: 0%;
+}
+
+.start-btn {
+  position: absolute;
+  top: 45%;
+  left: 40%;
+  padding: 15px 25px;
+  font-size: 18px;
+  background: hotpink;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+</style>
 </head>
+
 <body>
-   <h1>Welcome</h1>
-   <a href ="https://google.com/">go to google</a>
 
-  
-   <div>ddehdje</div>
-   <div> deepK</div>
+<div class="story-container">
 
-   <table border ="1">
-<thead>
-<th>
-   <tr> Student Name </tr>
-   <tr>Rool No</tr>
-   <tr>Address</tr>      
-</th>
-</thead>
-   </table>
+  <div class="progress-bar" id="progress"></div>
+
+  <img id="media" src="" style="display:none;">
+  <video id="video" style="display:none;" muted></video>
+
+  <div class="overlay-text" id="text"></div>
+
+  <button class="start-btn" onclick="startStory()">Start Holi Story 🎨</button>
+
+</div>
+
+<script>
+
+let mediaFiles = [
+  "img1.jpeg",
+  "img2.jpeg",
+  "img3.jpeg",
+  "img4.jpeg",
+  "img5.jpeg",
+  "img6.jpeg",
+  "img8.jpeg",
+  "video.mp4"   // video last me
+];
+
+let texts = [
+  "Holi but make it Developer 🎨",
+  "RGB Mode Activated 💻",
+  "Colors Compiled Successfully 🚀",
+  "This Moment = Pure Happiness ❤️",
+  "Data + Dhol = Perfect Combo 🥁",
+  "Celebrating Colors & Code 🌈",
+  "Memory Stored Successfully 💾",
+  "Final Story – Play the Video 🎬"
+];
+
+let current = 0;
+let interval;
+let duration = 4000;
+
+function startStory() {
+  document.querySelector(".start-btn").style.display = "none";
+  showMedia();
+  interval = setInterval(nextSlide, duration);
+}
+
+function showMedia() {
+  let img = document.getElementById("media");
+  let vid = document.getElementById("video");
+  let progress = document.getElementById("progress");
+
+  progress.style.width = "0%";
+  progress.style.transition = "none";
+
+  setTimeout(() => {
+    progress.style.transition = duration + "ms linear";
+    progress.style.width = "100%";
+  }, 100);
+
+  if (mediaFiles[current].includes(".mp4")) {
+    img.style.display = "none";
+    vid.style.display = "block";
+    vid.src = mediaFiles[current];
+    vid.play();
+    clearInterval(interval);
+  } else {
+    vid.style.display = "none";
+    img.style.display = "block";
+    img.src = mediaFiles[current];
+  }
+
+  document.getElementById("text").innerText = texts[current];
+}
+
+function nextSlide() {
+  current++;
+  if (current >= mediaFiles.length) {
+    clearInterval(interval);
+    return;
+  }
+  showMedia();
+}
+
+document.addEventListener("click", function(e){
+  if(e.clientX > window.innerWidth / 2){
+    nextSlide();
+  } else {
+    current--;
+    if(current < 0) current = 0;
+    showMedia();
+  }
+});
+
+</script>
+
 </body>
 </html>
